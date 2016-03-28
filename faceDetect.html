@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Face Tracker</title>
+		<meta charset="utf-8">
+    <style>
+      #container {
+        position : relative;
+      }
+
+      #canvas {
+        position : absolute;
+        left : 0;
+        top : 0;
+      }
+		</style>
+  </head>
+  <body>
+    <script src="js/clmtrackr.min.js"></script>
+    <script src="models/model_pca_20_svm.js"></script>
+
+    <div id="container">
+      <video id="inputVideo" width="400" height="300" autoplay>
+      </video>
+      <canvas id="canvas" width="400" height="300">
+      </canvas>
+    </div>
+
+    <script type="text/javascript">
+      var videoInput = document.getElementById('inputVideo');
+
+      /*
+        To use getUserMedia you need to run a local server: python -m SimpleHTTPServer 8000
+        http://localhost:8000/customFiles/faceDetect.html
+      */
+      // check for getUserMedia support
+      navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia || navigator.oGetUserMedia;
+
+      if (navigator.getUserMedia) {
+        // get webcam feed if available
+        navigator.getUserMedia({video: true}, handleVideo, videoError);
+      }
+
+      function handleVideo(stream) {
+        // if found attach feed to video element
+        videoInput.src = window.URL.createObjectURL(stream);
+      }
+
+      function videoError(e) {
+        // no webcam found - do something
+      }
+    </script>
+    <script type="text/javascript">
+      //var videoInput = document.getElementById('inputVideo');
+
+      var ctracker = new clm.tracker();
+      // pModel is defined in model_pca_20_svm
+      ctracker.init(pModel);
+      ctracker.start(videoInput);
+
+      var canvasInput = document.getElementById('canvas');
+      var cc = canvasInput.getContext('2d');
+      function drawLoop() {
+        requestAnimationFrame(drawLoop);
+        cc.clearRect(0, 0, canvasInput.width, canvasInput.height);
+        ctracker.draw(canvasInput);
+      }
+      drawLoop();
+    </script>
+
+  </body>
+</html>
